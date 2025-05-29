@@ -1,9 +1,10 @@
 import './App.css';
+import Login from './pages/login-signup/Login';
 
 function App() {
   return (
-    <div className='bg-red-600 text-red-700'>
-      Ali Rıza
+    <div>
+      <Login />
     </div>
   );
 }
