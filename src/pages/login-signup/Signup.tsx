@@ -4,8 +4,8 @@ function Signup() {
     return (
         <div className="flex min-h-screen">
             {/* Sol Panel */}
-            <div className="w-1/2 flex flex-col justify-center items-center bg-white p-24">
-                <div className="w-full max-w-sm">
+            <div className="w-full lg:w-1/2 flex flex-col justify-center items-center bg-white p-24">
+                <div className="w-full lg:max-w-sm">
                     <h1 className="text-3xl font-bold mb-2">Welcome</h1>
                     <p className="text-gray-500 text-sm mb-6">Create a free account</p>
 
@@ -16,7 +16,7 @@ function Signup() {
                                 type="text"
                                 id="fullname"
                                 name="fullname"
-                                placeholder="fullname"
+                                placeholder="Full name"
                                 className="w-full p-2 border border-gray-300 rounded"
                                 required
                             />
@@ -77,7 +77,7 @@ function Signup() {
                 </div>
             </div>
             {/* Sağ Panel */}
-            <div className="w-1/2 bg-purple-200 flex items-center justify-center">
+            <div className="w-full lg:w-1/2 bg-purple-200 flex items-center justify-center">
                 <img src="crow.png" alt="illustration" className="w-full h-full" />
             </div>
         </div>
