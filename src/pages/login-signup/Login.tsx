@@ -29,7 +29,7 @@ function Login() {
                 required
               />
             </div>
-            <button type="submit" className="w-full py-2 bg-purple-700 text-white rounded hover:bg-purple-800 transition">Sign up</button>
+            <button type="submit" className="w-full py-2 bg-purple-700 text-white rounded hover:bg-purple-800 transition">Sign in</button>
           </form>
         </div>
       </div>
