@@ -6,10 +6,32 @@ function Signup() {
             {/* Sol Panel */}
             <div className="w-1/2 flex flex-col justify-center items-center bg-white p-24">
                 <div className="w-full max-w-sm">
-                    <h1 className="text-3xl font-bold mb-2">Welcome back</h1>
+                    <h1 className="text-3xl font-bold mb-2">Welcome</h1>
                     <p className="text-gray-500 text-sm mb-6">Create a free account</p>
 
                     <form className="space-y-4">
+                        <div>
+                            <label htmlFor="fullname" className="block mb-1 text-sm font-medium text-gray-700">Full name</label>
+                            <input
+                                type="text"
+                                id="fullname"
+                                name="fullname"
+                                placeholder="fullname"
+                                className="w-full p-2 border border-gray-300 rounded"
+                                required
+                            />
+                        </div>
+                        <div>
+                            <label htmlFor="username" className="block mb-1 text-sm font-medium text-gray-700">Username</label>
+                            <input
+                                type="text"
+                                id="username"
+                                name="username"
+                                placeholder="Username"
+                                className="w-full p-2 border border-gray-300 rounded"
+                                required
+                            />
+                        </div>
                         <div>
                             <label htmlFor="email" className="block mb-1 text-sm font-medium text-gray-700">Email address</label>
                             <input
@@ -48,7 +70,7 @@ function Signup() {
                     </form>
 
                     <p className="text-sm mt-4">
-                        Don’t have an account? <Link to="/login" className="text-purple-700 font-medium">Sign in</Link>
+                        Have an account? <Link to="/login" className="text-purple-700 font-medium">Sign in</Link>
                     </p>
 
 

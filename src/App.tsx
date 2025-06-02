@@ -3,6 +3,7 @@ import './App.css';
 import Login from './pages/login-signup/Login';
 import Signup from './pages/login-signup/Signup';
 import { JSX } from 'react';
+import Dashboard from './pages/dashboard/Dashboard';
 
 function App(): JSX.Element {
   return (
@@ -10,6 +11,7 @@ function App(): JSX.Element {
       <Routes>
         <Route path="/" element={<Signup />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
     </Router>
   );
