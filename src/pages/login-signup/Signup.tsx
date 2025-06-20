@@ -7,7 +7,7 @@ function Signup() {
             <div className="w-full lg:w-1/2 flex flex-col justify-center items-center bg-white p-24">
                 <div className="w-full lg:max-w-sm">
                     <h1 className="text-3xl font-bold mb-2">Welcome</h1>
-                    <p className="text-gray-500 text-sm mb-6">Create a free account</p>
+                    <p className="text-gray-500 text-sm mb-6">Create an account</p>
 
                     <form className="space-y-4">
                         <div>

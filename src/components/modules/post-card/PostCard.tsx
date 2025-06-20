@@ -8,6 +8,8 @@ interface PostCardProps {
   commentCount?: number;
   likeCount?: number;
   isLiked?: boolean;
+  audioUrl?: string;
+  imageUrl?: string;
   onToggleLike?: (id: string) => void;
   onAddComment?: (id: string, comment: string) => void;
   comments?: string[];
@@ -24,9 +26,22 @@ const PostCard: FC<PostCardProps> = ({
   onToggleLike,
   onAddComment,
   comments = [],
+  audioUrl,
+  imageUrl
 }) => {
   const [commentText, setCommentText] = useState("");
-  const [isCommentOpen, setIsCommentOpen] = useState(false); // ✅ yorum kutusu açık mı
+  const [isCommentOpen, setIsCommentOpen] = useState(false);
+  const [showFullText, setShowFullText] = useState(false);
+
+  const maxLength = 300;
+  const isLongText = text.length > maxLength;
+  const displayText = showFullText
+    ? text
+    : isLongText
+      ? text.slice(0, maxLength) + "..."
+      : text;
+
+  const toggleText = () => setShowFullText((prev) => !prev);
 
   const handleComment = () => {
     if (!commentText.trim()) return;
@@ -46,28 +61,56 @@ const PostCard: FC<PostCardProps> = ({
         )}
         <span className="font-semibold">{name}</span>
       </div>
-      <p className="mb-2">{text}</p>
 
-      {/* Beğeni ve yorum yap butonları */}
+      {text && (
+        <p className="mb-2">
+          {displayText}
+          {isLongText && (
+            <div
+              onClick={toggleText}
+              className="mt-2 text-blue-600 text-sm cursor-pointer"
+            >
+              {showFullText ? "Daha az göster" : "Daha fazla göster"}
+            </div>
+          )}
+        </p>
+      )}
+
+      {audioUrl && (
+        <audio controls className="w-full mb-2">
+          <source src={audioUrl} type="audio/mpeg" />
+          Your browser does not support audio playback.
+        </audio>
+      )}
+
+      {imageUrl && (
+        <a href={imageUrl} target="_blank" rel="noopener noreferrer">
+          <img
+            src={imageUrl}
+            alt="Post content"
+            className="w-full max-h-[400px] object-contain rounded-lg mb-2 hover:opacity-90 transition"
+          />
+        </a>
+      )}
+
+
       <div className="flex space-x-4 text-gray-500 mb-2">
-        <button
-          className=""
-          onClick={() => setIsCommentOpen((prev) => !prev)}
-        >
+        <button onClick={() => setIsCommentOpen((prev) => !prev)}>
           💬 {commentCount}
         </button>
         <button
-          className={`focus:outline-none ${isLiked ? "text-red-500" : "text-gray-400"}`}
+          className={`focus:outline-none flex items-center space-x-1 ${isLiked ? "text-red-500" : "text-gray-400"}`}
           onClick={() => onToggleLike?.(id)}
         >
-          {isLiked ? "❤️" : "♡"} {likeCount}
+          <span className={isLiked ? "" : "text-2xl leading-none"}>
+            {isLiked ? "❤️" : "♡"}
+          </span>
+          <span className="text-sm">{likeCount}</span>
         </button>
       </div>
 
-      {/* Yorum kutusu ve yorum listesi sadece açıksa göster */}
       {isCommentOpen && (
         <>
-          {/* Yorum yazma alanı */}
           <div className="flex space-x-2 mb-2">
             <input
               type="text"
@@ -80,18 +123,18 @@ const PostCard: FC<PostCardProps> = ({
               onClick={handleComment}
               disabled={!commentText.trim()}
               className={`px-2 rounded text-white transition 
-              ${commentText.trim() 
-                ? "bg-blue-500 hover:bg-blue-600" 
-                : "bg-gray-300 cursor-not-allowed"}`}
+                ${commentText.trim()
+                  ? "bg-blue-500 hover:bg-blue-600"
+                  : "bg-gray-300 cursor-not-allowed"
+                }`}
             >
               Gönder
             </button>
           </div>
 
-          {/* Yorum listesi */}
           <div className="space-y-1 text-sm text-gray-700 max-h-32 overflow-y-auto border-t mt-2 pt-2 pr-2">
             {comments.map((comment, i) => (
-              <div key={i} className="border-t pt-1">
+              <div key={i} className="border-b pb-4 pt-3">
                 {comment}
               </div>
             ))}

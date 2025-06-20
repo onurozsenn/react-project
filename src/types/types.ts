@@ -7,4 +7,6 @@ export interface Post {
   commentCount: number;
   isLiked?: boolean;
   comments?: string[];
+  audioUrl?: string;
+  imageUrl?: string;
 }
