@@ -9,7 +9,7 @@ function Login() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (username === "onurali" && password === "1234") {
+    if (username === "testusername" && password === "1234") {
       setError(false);
       navigate("/dashboard");
     } else {
