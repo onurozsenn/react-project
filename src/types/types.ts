@@ -6,7 +6,7 @@ export interface Post {
   likeCount: number;
   commentCount: number;
   isLiked?: boolean;
-  comments?: string[];
+  comments: { id: string; text: string; name: string; avatar?: string }[];
   audioUrl?: string;
   imageUrl?: string;
 }
