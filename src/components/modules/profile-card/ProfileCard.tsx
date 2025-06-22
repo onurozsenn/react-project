@@ -6,18 +6,22 @@ import { Post } from "../../../types/types";
 const Profile: FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [profileImage, setProfileImage] = useState<string | null>(null);
-  
   const [posts, setPosts] = useState<Post[]>([]);
 
-  // Sayfa yüklendiğinde hem profil resmini hem de gönderileri localStorage'dan al
+  const [bio, setBio] = useState<string>("Biyografinizi düzenlemek için tıklayın.");
+  const [isEditingBio,setIsEditingBio] = useState<boolean>(false);
+
   useEffect(() => {
-    // Profil resmini yükle
     const savedImage = localStorage.getItem("profileImage");
     if (savedImage) {
       setProfileImage(savedImage);
     }
 
-    // Gönderileri yükle
+    const savedBio = localStorage.getItem("userBio");
+    if(savedBio) {
+      setBio(savedBio);
+    }
+
     const savedPosts = localStorage.getItem("posts");
     if (savedPosts) {
       try {
@@ -31,7 +35,6 @@ const Profile: FC = () => {
     }
   }, []);
   
-  // Sadece bu kullanıcıya ait gönderileri filtrele
   const userPosts = posts.filter(post => post.name === "Ali Rıza");
 
   const handleImageClick = () => {
@@ -51,6 +54,11 @@ const Profile: FC = () => {
       reader.readAsDataURL(file);
     }
   };
+  
+  const handleBioSave = () => {
+    localStorage.setItem("userBio",bio);
+    setIsEditingBio(false);
+  }
 
   const handleDeletePost = (id: string) => {
     const updated = posts.filter((post) => post.id !== id);
@@ -112,10 +120,7 @@ const Profile: FC = () => {
           />
           <h2 className="text-2xl font-bold">Ali Rıza</h2>
           <p className="text-gray-500 mb-4">@aliriza</p>
-          <p className="text-sm mt-2 mb-4">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec
-            odio. Praesent libero.
-          </p>
+          
           <div className="flex justify-around mt-4 text-sm border-t pt-4">
             <div>
               <strong>160</strong>
@@ -125,6 +130,32 @@ const Profile: FC = () => {
               <strong>8973</strong>
               <div className="text-gray-500">Followers</div>
             </div>
+          </div>
+         <div className="text-left mt-4 border-t pt-4">
+            <h3 className="font-semibold mb-2">Biography</h3>
+            {isEditingBio ? (
+              // Düzenleme Modu
+              <div>
+                <textarea
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded text-sm"
+                  rows={4}
+                />
+                <button
+                  onClick={handleBioSave}
+                  className="mt-2 px-4 py-1 bg-purple-700 text-white text-sm rounded hover:bg-purple-800 transition"
+                >
+                  Kaydet
+                </button>
+              </div>
+            ) : (
+              <div onClick={() => setIsEditingBio(true)} className="cursor-pointer">
+                <p className="text-sm text-gray-600 italic">
+                  {bio || "Biyografinizi düzenlemek için tıklayın."}
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
