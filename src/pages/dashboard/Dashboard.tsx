@@ -75,7 +75,13 @@ const Dashboard = () => {
         post.id === id
           ? {
             ...post,
-            comments: [...(post.comments || []), comment],
+            comments: [
+              ...(post.comments || []), 
+              { 
+                id: uuidv4(), 
+                text: comment,
+                name:"Ali Rıza",
+                avatar:"/profileIcon.png"}],
             commentCount: (post.commentCount || 0) + 1,
           }
           : post
@@ -84,6 +90,26 @@ const Dashboard = () => {
       return updated;
     });
   };
+
+  const handleDeleteComment = (postId: string, commentId: string) => {
+    const updated = posts.map((post) => 
+      post.id ===postId
+        ? {
+          ...post,
+          comments: post.comments.filter((comment) => comment.id !== commentId),
+          commentCount:post.commentCount-1,
+        }
+        : post
+    );
+    setPosts(updated);
+    localStorage.setItem("posts", JSON.stringify(updated));
+  };
+
+  const handleDeletePost = (id: string) => {
+      const updated = posts.filter((post) => post.id !== id);
+      setPosts(updated);
+      localStorage.setItem("posts",JSON.stringify(updated));
+    }
 
   return (
     <>
@@ -114,6 +140,8 @@ const Dashboard = () => {
             imageUrl={post.imageUrl}
             onToggleLike={toggleLike}
             onAddComment={addComment}
+            onDelete={handleDeletePost}
+            onDeleteComment={handleDeleteComment}
           />
         ))
       )}
