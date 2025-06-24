@@ -6,6 +6,8 @@ interface GenericModelProps {
     message: string;
     onConfirm: () => void;
     onCancel: () => void;
+    confirmText?: string;
+    cancelText?: string;
 }
 
 const GenericModal: FC<GenericModelProps> =({
@@ -14,8 +16,9 @@ const GenericModal: FC<GenericModelProps> =({
     message,
     onConfirm,
     onCancel,
-}
-) => { 
+    confirmText,
+    cancelText
+}) => { 
     if (!isOpen) return null;
 
     return (
@@ -29,13 +32,13 @@ const GenericModal: FC<GenericModelProps> =({
             onClick={onCancel}
             className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
           >
-            Vazgeç
+            {cancelText || 'Cancel'}
           </button>
           <button
             onClick={onConfirm}
             className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
           >
-            Evet
+            {confirmText || 'Confirm'}
           </button>
         </div>
       </div>

@@ -19,7 +19,6 @@ function Login() {
 
   return (
     <div className="flex min-h-screen">
-      {/* Sol Panel */}
       <div className="w-full lg:w-1/2 flex flex-col justify-center items-center bg-white p-10 md:p-10 lg:p-24">
         <div className="w-full lg:max-w-sm">
           <h1 className="text-3xl font-bold mb-3">Welcome back</h1>
@@ -62,10 +61,8 @@ function Login() {
               Sign in
             </button>
             {error && (
-              <p className="text-red-600 text-sm mt-2">Girdiğiniz bilgiler hatalı.</p>
+              <p className="text-red-600 text-sm mt-2">Incorrect username or password.</p>
             )}
-
-
           </form>
 
           <p className="text-sm mt-4">
@@ -74,7 +71,6 @@ function Login() {
         </div>
       </div>
 
-      {/* Sağ Panel */}
       <div className="w-full lg:w-1/2 bg-purple-200  items-center justify-center hidden md:hidden lg:flex">
         <img src="crow.png" alt="illustration" className="w-full h-full" />
       </div>
