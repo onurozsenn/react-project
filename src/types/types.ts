@@ -27,3 +27,10 @@ export interface Post {
   imageUrl?: string;
   createdAt: string;
 }
+
+export interface User {
+  id: number;
+  name: string;
+  username: string;
+  avatar: string;
+}
