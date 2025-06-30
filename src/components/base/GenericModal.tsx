@@ -1,27 +1,27 @@
-import { FC } from "react";
+import { FC, ReactNode } from "react";
 
 interface GenericModelProps {
-    isOpen: boolean;
-    title: string;
-    message: string;
-    onConfirm: () => void;
-    onCancel: () => void;
-    confirmText?: string;
-    cancelText?: string;
+  isOpen: boolean;
+  title: string;
+  message: ReactNode;
+  onConfirm: () => void;
+  onCancel: () => void;
+  confirmText?: string;
+  cancelText?: string;
 }
 
-const GenericModal: FC<GenericModelProps> =({
-    isOpen,
-    title,
-    message,
-    onConfirm,
-    onCancel,
-    confirmText,
-    cancelText
-}) => { 
-    if (!isOpen) return null;
+const GenericModal: FC<GenericModelProps> = ({
+  isOpen,
+  title,
+  message,
+  onConfirm,
+  onCancel,
+  confirmText,
+  cancelText
+}) => {
+  if (!isOpen) return null;
 
-    return (
+  return (
     <div className="fixed inset-0 z-50 bg-black bg-opacity-40 flex items-center justify-center">
       <div className="bg-white rounded-lg shadow-lg max-w-sm w-full p-5">
         <h2 className="text-lg font-semibold mb-2">{title}</h2>
