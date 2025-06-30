@@ -1,36 +1,45 @@
-export interface Reply {
-  avatar: string;
-  id: string;
-  text: string;
-  name: string;
-  createdAt: string;
-}
-
-export interface Comment {
-  avatar: string;
-  id: string;
-  text: string;
-  name: string;
-  createdAt: string;
-  replies: Reply[];
-}
-
-export interface Post {
-  id: string;
-  name: string;
-  text: string;
-  commentCount: number;
-  likeCount: number;
-  isLiked: boolean;
-  comments: Comment[];
-  audioUrl?: string;
-  imageUrl?: string;
-  createdAt: string;
-}
-
+// Kullanıcı listesi modal'ında kullanılacak kullanıcı tipi
 export interface User {
   id: number;
   name: string;
   username: string;
   avatar: string;
+}
+
+// Bir yanıta ait tip tanımı
+export interface Reply {
+  id: string;
+  userId: string;
+  name: string;
+  text: string;
+  createdAt: string;
+  isLiked?: boolean;
+  likeCount?: number;
+}
+
+// Ana bir yoruma ait tip tanımı
+export interface Comment {
+  id: string;
+  userId: string;
+  name: string;
+  text: string;
+  createdAt: string;
+  replies?: Reply[];
+  isLiked?: boolean;
+  likeCount?: number;
+}
+
+// Bir gönderiye ait ana tip tanımı
+export interface Post {
+  id: string;
+  userId: string;
+  name: string;
+  text: string;
+  likeCount: number;
+  commentCount: number;
+  isLiked?: boolean;
+  comments: Comment[];
+  audioUrl?: string;
+  imageUrl?: string;
+  createdAt: string;
 }

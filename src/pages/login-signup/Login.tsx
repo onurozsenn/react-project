@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { v4 as uuidv4 } from 'uuid';
 
 function Login() {
   const [username, setUsername] = useState("");
@@ -11,11 +12,20 @@ function Login() {
     e.preventDefault();
     if (username === "testusername" && password === "1234") {
       setError(false);
+      if (!localStorage.getItem('userName')) {
+        localStorage.setItem('userName', 'Ali Rıza');
+      }
       navigate("/dashboard");
     } else {
       setError(true);
     }
   };
+   useEffect(() => {
+    const existingUserId = localStorage.getItem('userId');
+    if (!existingUserId) {
+      localStorage.setItem('userId', uuidv4());
+    }
+  }, []);
 
   return (
     <div className="flex min-h-screen">

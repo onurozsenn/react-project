@@ -1,4 +1,4 @@
-import { FC, useState, useEffect, useRef, useMemo, ReactNode } from "react"; // ReactNode tipini import ettik
+import { FC, useState, useEffect, useRef, useMemo, ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import PostCard from "../../modules/post-card/PostCard";
@@ -6,39 +6,26 @@ import { Post, Comment, Reply, User } from "../../../types/types";
 import toast from 'react-hot-toast';
 import { XMarkIcon } from '@heroicons/react/24/solid';
 
-// --- YENİ, ÖZELLEŞTİRİLEBİLİR MODAL BİLEŞENİ ---
-// Bu bileşen artık projenin her yerinde farklı amaçlarla kullanılabilir.
+// --- ÖZELLEŞTİRİLEBİLİR MODAL BİLEŞENİ ---
 const CustomModal: FC<{
   isOpen: boolean;
   onClose: () => void;
   title?: string;
-  children: ReactNode; // Gövde: Herhangi bir React bileşeni alabilir
-  footer?: ReactNode; // Alt Kısım: Herhangi bir React bileşeni alabilir
+  children: ReactNode;
+  footer?: ReactNode;
 }> = ({ isOpen, onClose, title, children, footer }) => {
   if (!isOpen) return null;
-
   return (
     <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-sm w-full flex flex-col" style={{maxHeight: '90vh'}}>
-        {/* Başlık Bölümü */}
         <div className="flex items-center justify-between p-4 border-b">
           <h2 className="text-lg font-semibold">{title || ''}</h2>
           <button onClick={onClose} className="p-1 rounded-full hover:bg-gray-200">
             <XMarkIcon className="w-6 h-6 text-gray-600" />
           </button>
         </div>
-
-        {/* Gövde Bölümü (İçerik) */}
-        <div className="flex-1 overflow-y-auto p-4">
-          {children}
-        </div>
-
-        {/* Alt Kısım (Butonlar vb.) */}
-        {footer && (
-          <div className="p-4 border-t bg-gray-50 rounded-b-lg">
-            {footer}
-          </div>
-        )}
+        <div className="flex-1 overflow-y-auto p-4">{children}</div>
+        {footer && (<div className="p-4 border-t bg-gray-50 rounded-b-lg">{footer}</div>)}
       </div>
     </div>
   );
@@ -50,6 +37,7 @@ const Profile: FC = () => {
   // --- STATE'LER ---
   const [userName, setUserName] = useState("Ali Rıza");
   const [posts, setPosts] = useState<Post[]>([]);
+  const [userId, setUserId] = useState<string | null>(null);
   const [isUserListModalOpen, setUserListModalOpen] = useState(false);
   const [modalData, setModalData] = useState<{ title: string; users: User[] }>({ title: '', users: [] });
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -69,21 +57,26 @@ const Profile: FC = () => {
 
   // --- VERİ YÜKLEME VE HESAPLAMALAR ---
   useEffect(() => {
-    const savedName = localStorage.getItem("userName") || "Ali Rıza"; setUserName(savedName);
-    const savedImage = localStorage.getItem("profileImage"); if (savedImage) setProfileImage(savedImage);
-    const savedBio = localStorage.getItem("userBio"); if (savedBio) setBio(savedBio);
-    const savedPosts = localStorage.getItem("posts"); if (savedPosts) { try { const parsedPosts = JSON.parse(savedPosts); if (Array.isArray(parsedPosts)) setPosts(parsedPosts); } catch (err) { console.error("Invalid JSON data:", err); } }
+    const storedUserId = localStorage.getItem('userId');
+    setUserId(storedUserId);
+
+    const savedName = localStorage.getItem("userName") || "Ali Rıza"; 
+    setUserName(savedName);
+    const savedImage = localStorage.getItem("profileImage"); 
+    if (savedImage) setProfileImage(savedImage);
+    const savedBio = localStorage.getItem("userBio"); 
+    if (savedBio) setBio(savedBio);
+    const savedPosts = localStorage.getItem("posts"); 
+    if (savedPosts) { try { const parsedPosts = JSON.parse(savedPosts); if (Array.isArray(parsedPosts)) setPosts(parsedPosts); } catch (err) { console.error("Invalid JSON data:", err); } }
   }, []);
   
-  const userPosts = posts.filter(post => post.name === userName);
+  // FİLTRELEME ARTIK KULLANICI ADI YERİNE userId İLE YAPILIYOR
+  const userPosts = posts.filter(post => post.userId === userId);
   const totalLikes = useMemo(() => userPosts.reduce((sum, post) => sum + (post.likeCount || 0), 0), [userPosts]);
   
   // --- FONKSİYONLAR ---
   const openUserListModal = (type: 'followers' | 'following') => {
-    setModalData({
-      title: type === 'followers' ? 'Followers' : 'Following',
-      users: type === 'followers' ? dummyFollowers : dummyFollowing,
-    });
+    setModalData({ title: type === 'followers' ? 'Followers' : 'Following', users: type === 'followers' ? dummyFollowers : dummyFollowing, });
     setUserListModalOpen(true);
   };
   
@@ -94,9 +87,16 @@ const Profile: FC = () => {
   const toggleLike = (id: string) => { const updated = posts.map((post) => post.id === id ? { ...post, isLiked: !post.isLiked, likeCount: post.isLiked ? post.likeCount - 1 : post.likeCount + 1 } : post ); setPosts(updated); localStorage.setItem("posts", JSON.stringify(updated)); };
   
   const addComment = (id: string, commentText: string) => {
+    if (!userId) return; // Güvenlik kontrolü
     const newComment: Comment = {
-      id: uuidv4(), text: commentText, name: userName, createdAt: new Date().toISOString(), replies: [],
-      avatar: ""
+      id: uuidv4(),
+      userId: userId, // userId eklendi
+      text: commentText,
+      name: userName,
+      createdAt: new Date().toISOString(),
+      replies: [],
+      isLiked: false,
+      likeCount: 0,
     };
     const updated = posts.map((post) => post.id === id ? { ...post, comments: [...(post.comments || []), newComment], commentCount: (post.commentCount || 0) + 1 } : post );
     setPosts(updated);
@@ -104,9 +104,15 @@ const Profile: FC = () => {
   };
   
   const handleAddReply = (postId: string, parentCommentId: string, text: string) => {
+    if (!userId) return; // Güvenlik kontrolü
     const newReply: Reply = {
-      id: uuidv4(), text, name: userName, createdAt: new Date().toISOString(),
-      avatar: ""
+      id: uuidv4(),
+      userId: userId, // userId eklendi
+      text,
+      name: userName,
+      createdAt: new Date().toISOString(),
+      isLiked: false,
+      likeCount: 0,
     };
     const updatedPosts = posts.map(post => {
       if (post.id === postId) {
@@ -123,6 +129,51 @@ const Profile: FC = () => {
   };
 
   const handleDeleteComment = (postId: string, commentId: string) => { const updated = posts.map((post) => { if (post.id !== postId) return post; const commentToDelete = post.comments.find(c => c.id === commentId); const commentCountChange = (commentToDelete?.replies?.length || 0) + 1; const updatedComments = post.comments.filter((comment) => comment.id !== commentId); return { ...post, comments: updatedComments, commentCount: post.commentCount - commentCountChange }; }); setPosts(updated); localStorage.setItem("posts", JSON.stringify(updated)); toast.success('Comment successfully deleted!'); };
+  const handleDeleteReply = (postId: string, commentId: string, replyId: string) => { const updated = posts.map(post => { if (post.id === postId) { const updatedComments = post.comments.map(comment => { if (comment.id === commentId) { const updatedReplies = (comment.replies || []).filter(reply => reply.id !== replyId); return { ...comment, replies: updatedReplies }; } return comment; }); return { ...post, comments: updatedComments, commentCount: (post.commentCount || 1) - 1 }; } return post; }); setPosts(updated); localStorage.setItem("posts", JSON.stringify(updated)); toast.success('Reply deleted!'); };
+  
+  const handleToggleCommentLike = (postId: string, commentId: string) => {
+    const updatedPosts = posts.map(post => {
+      if (post.id === postId) {
+        const updatedComments = post.comments.map(comment => {
+          if (comment.id === commentId) {
+            const newIsLiked = !comment.isLiked;
+            const newLikeCount = newIsLiked ? (comment.likeCount || 0) + 1 : (comment.likeCount || 1) - 1;
+            return { ...comment, isLiked: newIsLiked, likeCount: newLikeCount };
+          }
+          return comment;
+        });
+        return { ...post, comments: updatedComments };
+      }
+      return post;
+    });
+    setPosts(updatedPosts);
+    localStorage.setItem("posts", JSON.stringify(updatedPosts));
+  };
+
+  const handleToggleReplyLike = (postId: string, commentId: string, replyId: string) => {
+    const updatedPosts = posts.map(post => {
+      if (post.id === postId) {
+        const updatedComments = post.comments.map(comment => {
+          if (comment.id === commentId) {
+            const updatedReplies = (comment.replies || []).map(reply => {
+              if (reply.id === replyId) {
+                const newIsLiked = !reply.isLiked;
+                const newLikeCount = newIsLiked ? (reply.likeCount || 0) + 1 : (reply.likeCount || 1) - 1;
+                return { ...reply, isLiked: newIsLiked, likeCount: newLikeCount };
+              }
+              return reply;
+            });
+            return { ...comment, replies: updatedReplies };
+          }
+          return comment;
+        });
+        return { ...post, comments: updatedComments };
+      }
+      return post;
+    });
+    setPosts(updatedPosts);
+    localStorage.setItem("posts", JSON.stringify(updatedPosts));
+  };
   
   return (
     <>
@@ -152,26 +203,26 @@ const Profile: FC = () => {
 
             <div className="text-left mt-4 border-t pt-4">
               <h3 className="font-semibold mb-2">Biography</h3>
-              {isEditingBio ? (
-                <div>
-                  <textarea value={bio} onChange={(e) => setBio(e.target.value)} className="w-full p-2 border border-gray-300 rounded text-sm" rows={4}/>
-                  <button onClick={handleBioSave} className="mt-2 px-4 py-1 bg-purple-700 text-white text-sm rounded hover:bg-purple-800 transition">Save</button>
-                </div>
-              ) : (
-                <div onClick={() => setIsEditingBio(true)} className="cursor-pointer">
-                  <p className="text-sm text-gray-600 italic">{bio || "Click to edit your biography."}</p>
-                </div>
-              )}
+              {isEditingBio ? ( <div> <textarea value={bio} onChange={(e) => setBio(e.target.value)} className="w-full p-2 border border-gray-300 rounded text-sm" rows={4}/> <button onClick={handleBioSave} className="mt-2 px-4 py-1 bg-purple-700 text-white text-sm rounded hover:bg-purple-800 transition">Save</button> </div> ) : ( <div onClick={() => setIsEditingBio(true)} className="cursor-pointer"> <p className="text-sm text-gray-600 italic">{bio || "Click to edit your biography."}</p> </div> )}
             </div>
           </div>
         </div>
-
-        {/* Gönderi Listesi */}
         <div className="md:col-span-2">
             <h2 className="text-xl font-bold mb-4 bg-white p-4 shadow rounded-lg">My Posts</h2>
             {userPosts.length > 0 ? (
                 userPosts.map((post) => (
-                    <PostCard key={post.id} {...post} onDelete={handleDeletePost} onToggleLike={toggleLike} onAddComment={addComment} onDeleteComment={handleDeleteComment} onAddReply={handleAddReply} />
+                    <PostCard
+                        key={post.id}
+                        {...post}
+                        onDelete={handleDeletePost}
+                        onToggleLike={toggleLike}
+                        onAddComment={addComment}
+                        onDeleteComment={handleDeleteComment}
+                        onAddReply={handleAddReply}
+                        onDeleteReply={handleDeleteReply}
+                        onToggleCommentLike={handleToggleCommentLike}
+                        onToggleReplyLike={handleToggleReplyLike}
+                    />
                 ))
             ) : (
                 <div className="text-center text-gray-500 mt-5 bg-white rounded-lg pt-20 pb-20 shadow-md">
@@ -180,28 +231,16 @@ const Profile: FC = () => {
             )}
         </div>
       </div>
-
-      {/* YENİ CustomModal KULLANIMI */}
-      <CustomModal
-        isOpen={isUserListModalOpen}
-        onClose={() => setUserListModalOpen(false)}
-        title={modalData.title}
-      >
-        {/* Modal'ın gövdesine (children) kullanıcı listesi JSX'ini koyuyoruz */}
+      <CustomModal isOpen={isUserListModalOpen} onClose={() => setUserListModalOpen(false)} title={modalData.title}>
         <div className="space-y-4">
             {modalData.users.length > 0 ? (
               modalData.users.map(user => (
                 <div key={user.id} className="flex items-center">
                   <img src={user.avatar} onError={(e) => { e.currentTarget.src = 'https://placehold.co/100x100?text=??' }} alt={user.name} className="w-12 h-12 rounded-full mr-4" />
-                  <div className="flex flex-col">
-                    <span className="font-semibold text-gray-800">{user.name}</span>
-                    <span className="text-sm text-gray-500">@{user.username}</span>
-                  </div>
+                  <div className="flex flex-col"><span className="font-semibold text-gray-800">{user.name}</span><span className="text-sm text-gray-500">@{user.username}</span></div>
                 </div>
               ))
-            ) : (
-              <p className="text-center text-gray-500 mt-8">No users to display.</p>
-            )}
+            ) : ( <p className="text-center text-gray-500 mt-8">No users to display.</p> )}
         </div>
       </CustomModal>
     </>

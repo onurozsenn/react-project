@@ -3,16 +3,21 @@ import { v4 as uuidv4 } from "uuid";
 import PostForm from "../../components/modules/post-form/PostForm";
 import PostCard from "../../components/modules/post-card/PostCard";
 import { Post, Comment, Reply } from "../../types/types";
-import toast from 'react-hot-toast'
+import toast from "react-hot-toast";
 
 const Dashboard = () => {
   const [posts, setPosts] = useState<Post[]>([]);
+  const [userId, setUserId] = useState<string | null>(null);
 
+  // Sayfa ilk yüklendiğinde, kullanıcı ID'sini ve mevcut gönderileri hafızadan alır.
   useEffect(() => {
-    const saved = localStorage.getItem("posts");
-    if (saved) {
+    const storedUserId = localStorage.getItem('userId');
+    setUserId(storedUserId);
+
+    const savedPosts = localStorage.getItem("posts");
+    if (savedPosts) {
       try {
-        const parsed = JSON.parse(saved);
+        const parsed = JSON.parse(savedPosts);
         if (Array.isArray(parsed)) {
           setPosts(parsed);
         }
@@ -22,7 +27,13 @@ const Dashboard = () => {
     }
   }, []);
 
+  // Yeni bir gönderi ekleme fonksiyonu
   const handleAddPost = (text: string, isAnonymous: boolean, mediaFile?: File | null) => {
+    if (!userId && !isAnonymous) {
+        toast.error("User ID not found. Please log in again.");
+        return;
+    }
+    
     const currentUserName = localStorage.getItem("userName") || "Ali Rıza";
     let audioUrl = "";
     let imageUrl = "";
@@ -35,6 +46,7 @@ const Dashboard = () => {
 
     const newPost: Post = {
       id: uuidv4(),
+      userId: isAnonymous ? 'anonymous' : userId!,
       name: isAnonymous ? "Anonymous" : currentUserName,
       text,
       commentCount: 0,
@@ -52,6 +64,7 @@ const Dashboard = () => {
     toast.success('Post successfully created!');
   };
 
+  // Bir gönderiyi beğenme/beğenmekten vazgeçme
   const toggleLike = (id: string) => {
     const updated = posts.map((post) =>
       post.id === id ? { ...post, isLiked: !post.isLiked, likeCount: post.isLiked ? post.likeCount - 1 : post.likeCount + 1 } : post
@@ -60,72 +73,133 @@ const Dashboard = () => {
     localStorage.setItem("posts", JSON.stringify(updated));
   };
 
+  // Yeni bir yorum ekleme
   const addComment = (id: string, commentText: string) => {
+    if (!userId) return;
     const currentUserName = localStorage.getItem("userName") || "Ali Rıza";
-    
     const newComment: Comment = {
       id: uuidv4(),
+      userId: userId,
       text: commentText,
       name: currentUserName,
       createdAt: new Date().toISOString(),
       replies: [],
-      avatar: ""
+      isLiked: false,
+      likeCount: 0,
     };
-    
-    const updated = posts.map((post) =>
-      post.id === id ? { ...post, comments: [...(post.comments || []), newComment], commentCount: (post.commentCount || 0) + 1 } : post
-    );
+    const updated = posts.map((post) => post.id === id ? { ...post, comments: [...(post.comments || []), newComment], commentCount: (post.commentCount || 0) + 1 } : post);
     setPosts(updated);
     localStorage.setItem("posts", JSON.stringify(updated));
   };
-
-  const handleDeletePost = (id: string) => {
-      const updated = posts.filter((post) => post.id !== id);
-      setPosts(updated);
-      localStorage.setItem("posts",JSON.stringify(updated));
-      toast.success('Post successfully deleted!')
-  }
-
-  const handleDeleteComment = (postId: string, commentId: string) => {
-    const updated = posts.map((post) => {
-      if (post.id !== postId) return post;
   
-      const commentToDelete = post.comments.find(c => c.id === commentId);
-      const commentCountChange = (commentToDelete?.replies?.length || 0) + 1;
-  
-      const updatedComments = post.comments.filter((comment) => comment.id !== commentId);
-  
-      return { ...post, comments: updatedComments, commentCount: post.commentCount - commentCountChange };
-    });
-    setPosts(updated);
-    localStorage.setItem("posts", JSON.stringify(updated));
-    toast.success('Comment succesfully deleted!');
-  };
-
+  // Yeni bir yanıt ekleme
   const handleAddReply = (postId: string, parentCommentId: string, text: string) => {
+    if (!userId) return;
     const userName = localStorage.getItem("userName") || "Ali Rıza";
-    
     const newReply: Reply = {
       id: uuidv4(),
+      userId: userId,
       text,
       name: userName,
       createdAt: new Date().toISOString(),
-      avatar: ""
+      isLiked: false,
+      likeCount: 0,
     };
-
     const updatedPosts = posts.map(post => {
       if (post.id === postId) {
         const updatedComments = post.comments.map(comment => {
-          if (comment.id === parentCommentId) {
-            return { ...comment, replies: [...(comment.replies || []), newReply] };
-          }
+          if (comment.id === parentCommentId) { return { ...comment, replies: [...(comment.replies || []), newReply] }; }
           return comment;
         });
         return { ...post, comments: updatedComments, commentCount: (post.commentCount || 0) + 1 };
       }
       return post;
     });
+    setPosts(updatedPosts);
+    localStorage.setItem("posts", JSON.stringify(updatedPosts));
+  };
 
+  // Gönderi, yorum ve yanıt silme fonksiyonları
+  const handleDeletePost = (id: string) => {
+    const updated = posts.filter((post) => post.id !== id);
+    setPosts(updated);
+    localStorage.setItem("posts", JSON.stringify(updated));
+    toast.success('Post successfully deleted!');
+  }
+
+  const handleDeleteComment = (postId: string, commentId: string) => {
+    const updated = posts.map((post) => {
+      if (post.id !== postId) return post;
+      const commentToDelete = post.comments.find(c => c.id === commentId);
+      const commentCountChange = (commentToDelete?.replies?.length || 0) + 1;
+      const updatedComments = post.comments.filter((comment) => comment.id !== commentId);
+      return { ...post, comments: updatedComments, commentCount: post.commentCount - commentCountChange };
+    });
+    setPosts(updated);
+    localStorage.setItem("posts", JSON.stringify(updated));
+    toast.success('Comment deleted!');
+  };
+
+  const handleDeleteReply = (postId: string, commentId: string, replyId: string) => {
+    const updated = posts.map(post => {
+      if (post.id === postId) {
+        const updatedComments = post.comments.map(comment => {
+          if (comment.id === commentId) {
+            const updatedReplies = (comment.replies || []).filter(reply => reply.id !== replyId);
+            return { ...comment, replies: updatedReplies };
+          }
+          return comment;
+        });
+        return { ...post, comments: updatedComments, commentCount: (post.commentCount || 1) - 1 };
+      }
+      return post;
+    });
+    setPosts(updated);
+    localStorage.setItem("posts", JSON.stringify(updated));
+    toast.success('Reply deleted!');
+  };
+  
+  // Yorum ve yanıt beğenme fonksiyonları
+  const handleToggleCommentLike = (postId: string, commentId: string) => {
+    const updatedPosts = posts.map(post => {
+      if (post.id === postId) {
+        const updatedComments = post.comments.map(comment => {
+          if (comment.id === commentId) {
+            const newIsLiked = !comment.isLiked;
+            const newLikeCount = newIsLiked ? (comment.likeCount || 0) + 1 : (comment.likeCount || 1) - 1;
+            return { ...comment, isLiked: newIsLiked, likeCount: newLikeCount };
+          }
+          return comment;
+        });
+        return { ...post, comments: updatedComments };
+      }
+      return post;
+    });
+    setPosts(updatedPosts);
+    localStorage.setItem("posts", JSON.stringify(updatedPosts));
+  };
+
+  const handleToggleReplyLike = (postId: string, commentId: string, replyId: string) => {
+    const updatedPosts = posts.map(post => {
+      if (post.id === postId) {
+        const updatedComments = post.comments.map(comment => {
+          if (comment.id === commentId) {
+            const updatedReplies = (comment.replies || []).map(reply => {
+              if (reply.id === replyId) {
+                const newIsLiked = !reply.isLiked;
+                const newLikeCount = newIsLiked ? (reply.likeCount || 0) + 1 : (reply.likeCount || 1) - 1;
+                return { ...reply, isLiked: newIsLiked, likeCount: newLikeCount };
+              }
+              return reply;
+            });
+            return { ...comment, replies: updatedReplies };
+          }
+          return comment;
+        });
+        return { ...post, comments: updatedComments };
+      }
+      return post;
+    });
     setPosts(updatedPosts);
     localStorage.setItem("posts", JSON.stringify(updatedPosts));
   };
@@ -148,6 +222,9 @@ const Dashboard = () => {
             onDelete={handleDeletePost}
             onDeleteComment={handleDeleteComment}
             onAddReply={handleAddReply}
+            onDeleteReply={handleDeleteReply}
+            onToggleCommentLike={handleToggleCommentLike}
+            onToggleReplyLike={handleToggleReplyLike}
           />
         ))
       )}
