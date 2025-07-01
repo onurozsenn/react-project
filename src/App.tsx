@@ -1,26 +1,29 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route, BrowserRouter } from 'react-router-dom';
 import './App.css';
 import Login from './pages/login-signup/Login';
-import Signup from './pages/login-signup/Signup';
+import Signup from './pages/login-signup/Signup'; 
 import Dashboard from './pages/dashboard/Dashboard';
-import ProfileCard from './components/modules/profile-card/ProfileCard';
+import Profile from './components/modules/profile-card/ProfileCard'; 
 import DashboardLayout from './components/layout/DashboardLayout';
 import SettingsPage from './pages/settings/SettingsPage';
 
 function App() {
   return (
-    <Router>
+    // Hatanın çözümü için BrowserRouter'ı tekrar buraya ekliyoruz.
+    // Artık <Routes> bileşeni, hangi adrese bakacağını biliyor.
+    <BrowserRouter>
       <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/" element={<Signup />} />
+        <Route path="/" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
 
+        {/* Ana Layout'u kullanan sayfalar */}
         <Route element={<DashboardLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/profile" element={<ProfileCard />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Route>
       </Routes>
-    </Router>
+    </BrowserRouter>
   );
 }
 
